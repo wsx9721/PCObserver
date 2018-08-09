@@ -98,12 +98,16 @@ namespace PCObserve
             Guid Guid = Guid.NewGuid();
             string guid = Guid.ToString();
 
+            string hostname = System.Net.Dns.GetHostName();
+            IPAddress ddr = new System.Net.IPAddress(Dns.GetHostByName(Dns.GetHostName()).AddressList[0].Address);
+            string ip = ddr.ToString();
+
             BlackList checker = new BlackList();
             string ans =  checker.Check(process);
             //MessageBox.Show(ans);
             richTextBox1.Text = ans;
 
-            string postData = string.Format("s={0}&guid={1}", ans,guid);
+            string postData = string.Format("s={0}&guid={1}&hostname={2}&ip={3}", ans,guid,hostname,ip);
             UTF8Encoding encoding = new UTF8Encoding();
             byte[] bytepostData = encoding.GetBytes(postData);
 
@@ -120,9 +124,9 @@ namespace PCObserve
             dataStream.Write(bytepostData, 0, bytepostData.Length);
             dataStream.Close();
             WebResponse response = request.GetResponse();
-            Console.WriteLine(((HttpWebResponse)response).StatusDescription);
-            Stream data = response.GetResponseStream();
-            response.Close();
+            //Console.WriteLine(((HttpWebResponse)response).StatusDescription);
+            //Stream data = response.GetResponseStream();
+            //response.Close();
         }
     }
 }
