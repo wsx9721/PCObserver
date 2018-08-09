@@ -10,6 +10,8 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.Threading;
 using System.Collections;
+using System.Net;
+using System.IO;
 
 namespace PCObserve
 {
@@ -90,20 +92,34 @@ namespace PCObserve
             ArrayList process = new ArrayList();
             foreach (Process ps in Process.GetProcesses())
             {
-                //PerformanceCounter pf1 = new PerformanceCounter("Process", "Working Set - Private", ps.ProcessName);
-                //PerformanceCounter pf2 = new PerformanceCounter("Process", "Working Set", ps.ProcessName);
-                //s = s + "进程名:" + ps.ProcessName + "\r\n";
-                //if (ps.ProcessName == "QQPCTray") MessageBox.Show("不许使用QQ");
-                //if (ps.ProcessName == "") MessageBox.Show("不许使用STEAM");
-                Console.WriteLine(ps.ProcessName);
                 if (!process.Contains(ps.ProcessName)) process.Add(ps.ProcessName);
             }
-            foreach(String pro in process)
-            {
-                s = s + "进程:" + pro + "\r\n";
-            }
-            richTextBox1.Text = s;
-            MessageBox.Show(Convert.ToString(process.Count));
+
+            BlackList checker = new BlackList();
+            string ans =  checker.Check(process);
+            //MessageBox.Show(ans);
+            richTextBox1.Text = ans;
+
+            string postData = string.Format("s={0}", ans);
+            UTF8Encoding encoding = new UTF8Encoding();
+            byte[] bytepostData = encoding.GetBytes(postData);
+
+            //string temp = System.Web.HttpUtility.UrlEncode(s);
+            //byte[] URL_S;
+            //URL_S = System.Text.Encoding.UTF8.GetBytes(parameters);
+            string URL = "http://localhost/20180803/test.php";
+            HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URL);
+            ((HttpWebRequest)request).UserAgent = ".NET Framework Example Client";
+            request.Method = "POST";
+            request.ContentLength = bytepostData.Length;
+            request.ContentType = "application/x-www-form-urlencoded";
+            Stream dataStream = request.GetRequestStream();
+            dataStream.Write(bytepostData, 0, bytepostData.Length);
+            dataStream.Close();
+            WebResponse response = request.GetResponse();
+            Console.WriteLine(((HttpWebResponse)response).StatusDescription);
+            Stream data = response.GetResponseStream();
+            response.Close();
         }
     }
 }
