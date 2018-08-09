@@ -95,12 +95,15 @@ namespace PCObserve
                 if (!process.Contains(ps.ProcessName)) process.Add(ps.ProcessName);
             }
 
+            Guid Guid = Guid.NewGuid();
+            string guid = Guid.ToString();
+
             BlackList checker = new BlackList();
             string ans =  checker.Check(process);
             //MessageBox.Show(ans);
             richTextBox1.Text = ans;
 
-            string postData = string.Format("s={0}", ans);
+            string postData = string.Format("s={0}&guid={1}", ans,guid);
             UTF8Encoding encoding = new UTF8Encoding();
             byte[] bytepostData = encoding.GetBytes(postData);
 
