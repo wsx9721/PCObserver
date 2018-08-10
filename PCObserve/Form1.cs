@@ -86,34 +86,37 @@ namespace PCObserve
 
         private void Form1_Load(object sender, EventArgs e)
         {
-            Hashtable blacklist = new Hashtable();
+            Config config = new Config();
+            int mode = config.check(); //blacklist:0  whitelist:1
+            Console.WriteLine(mode);
             Stopwatch watch = Stopwatch.StartNew();
-            string s = "";
             ArrayList process = new ArrayList();
             foreach (Process ps in Process.GetProcesses())
             {
                 if (!process.Contains(ps.ProcessName)) process.Add(ps.ProcessName);
             }
-
+            string ans = "";
+            if(mode == 0)
+            {
+                BlackList checker = new BlackList();
+                ans = checker.Check(process);
+            }
+            else
+            {
+                foreach (Process ps in Process.GetProcesses())
+                {
+                    WhiteList checker = new WhiteList();
+                    ans = checker.check(process);
+                }
+            }
             Guid Guid = Guid.NewGuid();
             string guid = Guid.ToString();
-
             string hostname = System.Net.Dns.GetHostName();
             IPAddress ddr = new System.Net.IPAddress(Dns.GetHostByName(Dns.GetHostName()).AddressList[0].Address);
             string ip = ddr.ToString();
-
-            BlackList checker = new BlackList();
-            string ans =  checker.Check(process);
-            //MessageBox.Show(ans);
-            richTextBox1.Text = ans;
-
-            string postData = string.Format("s={0}&guid={1}&hostname={2}&ip={3}", ans,guid,hostname,ip);
+            string postData = string.Format("s={0}&guid={1}&hostname={2}&ip={3}&mode={4}", ans, guid, hostname, ip, mode);
             UTF8Encoding encoding = new UTF8Encoding();
             byte[] bytepostData = encoding.GetBytes(postData);
-
-            //string temp = System.Web.HttpUtility.UrlEncode(s);
-            //byte[] URL_S;
-            //URL_S = System.Text.Encoding.UTF8.GetBytes(parameters);
             string URL = "http://localhost/20180803/test.php";
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(URL);
             ((HttpWebRequest)request).UserAgent = ".NET Framework Example Client";
